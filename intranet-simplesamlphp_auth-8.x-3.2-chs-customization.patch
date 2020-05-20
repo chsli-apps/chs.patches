@@ -1,0 +1,49 @@
+diff --git a/src/Service/SimplesamlphpDrupalAuth.php b/src/Service/SimplesamlphpDrupalAuth.php
+index de367cc..cdd6c42 100644
+--- a/src/Service/SimplesamlphpDrupalAuth.php
++++ b/src/Service/SimplesamlphpDrupalAuth.php
+@@ -300,6 +300,44 @@ class SimplesamlphpDrupalAuth {
+     // Set boolean to only update account when needed.
+     $account_updated = FALSE;
+ 
++    // CHSLI - WSJ
++    // Check if accountName has 3 numbers at end (IPA)
++    $roles = user_role_names(TRUE);
++    foreach ($roles as $key => $role) {
++    //      if ($role == "chspp-ipa") {
++    //        $ipaRoleId = $key;
++    //      }
++    //      if ($role == "chspp-employed") {
++    //        $empRoleId = $key;
++    //      }
++      if ($role == "temp_pp_user") {
++        $tmpRoleId = $key;
++      }
++    }
++
++    $accountName = $account->getAccountName();
++    $accountName = explode("@", $account->getAccountName())[0];
++    //    if (is_numeric(substr($accountName, -3))) {
++    //      $this->logger->critical("IPA Role - ".$accountName);
++    //      $account->removeRole($empRoleId); // Remove Employed Role
++    //      $account->addRole($ipaRoleId);    // IPA Role
++    //      $account->save();
++    //    } else {
++    //      $this->logger->critical("Non-IPA Role - ".$accountName);
++    //      $account->removeRole($ipaRoleId); // Remove IPA Role
++    //      $account->addRole($empRoleId);    // Employed Role
++    //      $account->save();
++    //    }
++    // hardcoding until saml roles work
++    //    $this->logger->critical("AccountName - ".$accountName);
++    //if ($accountName != "wjakah01" and $accountName != "fcheng03" and $accountName != "jmurrycap01" and $accountName != "jmurryipa01" and $accountName != "jmurryeom01" and $accountName != "jmurryipa02") {
++    //    if ($accountName != "fcheng03" and $accountName != "jmurrycap01" and $accountName != "jmurryipa01" and $accountName != "jmurryeom01" and $accountName != "jmurryipa02") {
++    //      $account->addRole($tmpRoleId);    // Temp Role
++    //      $account->save();
++    //    }
++
++    // CHSLI - WSJ    
++
+     // Remove non-locked roles not mapped to the user via SAML.
+     foreach (array_diff($current_roles, $matching_roles) as $role_id) {
+       if ($this->config->get('debug')) {

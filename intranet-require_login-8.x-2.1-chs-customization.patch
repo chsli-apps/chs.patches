@@ -1,0 +1,19 @@
+diff --git a/src/EventSubscriber/RequireLoginSubscriber.php b/src/EventSubscriber/RequireLoginSubscriber.php
+index f91ad8c..780eb9a 100644
+--- a/src/EventSubscriber/RequireLoginSubscriber.php
++++ b/src/EventSubscriber/RequireLoginSubscriber.php
+@@ -127,6 +127,14 @@ class RequireLoginSubscriber implements EventSubscriberInterface {
+       }
+     }
+ 
++    // CHSLI WSJ - 1.16.2019
++    // print_r($request->getHost());
++    $ignoreDomains = array("chspp-staging.chsli.org","chspp-prod.chsli.org","physicianpartners.chsli.org");
++    if (in_array($request->getHost(), $ignoreDomains)) {
++        return FALSE;
++    }
++
++
+     // Check path exclusions.
+     $excluded_paths = explode(PHP_EOL, $config->get('excluded_paths'));
+     $excluded_paths[] = $config->get('auth_path');
