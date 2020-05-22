@@ -1,0 +1,91 @@
+diff --git a/simplesamlphp_auth.routing.yml b/simplesamlphp_auth.routing.yml
+index 99b4401..f3b7eec 100644
+--- a/simplesamlphp_auth.routing.yml
++++ b/simplesamlphp_auth.routing.yml
+@@ -24,7 +24,7 @@ simplesamlphp_auth.saml_login:
+   defaults:
+     _controller: '\Drupal\simplesamlphp_auth\Controller\SimplesamlphpAuthController::authenticate'
+   requirements:
+-    _user_is_logged_in: 'FALSE'
++    _access: 'TRUE'
+   options:
+     _maintenance_access: TRUE
+     no_cache: TRUE
+diff --git a/src/Controller/SimplesamlphpAuthController.php b/src/Controller/SimplesamlphpAuthController.php
+index 8a084f2..83ea4b9 100644
+--- a/src/Controller/SimplesamlphpAuthController.php
++++ b/src/Controller/SimplesamlphpAuthController.php
+@@ -146,15 +146,14 @@ class SimplesamlphpAuthController extends ControllerBase implements ContainerInj
+     // See if a URL has been explicitly provided in ReturnTo. If so, use it
+     // otherwise, use the HTTP_REFERER. Each must point to the site to be valid.
+     $request = $this->requestStack->getCurrentRequest();
+-
+     if (($return_to = $request->query->get('ReturnTo')) ||
+         ($return_to = $request->request->get('ReturnTo')) ||
+         ($return_to = $request->server->get('HTTP_REFERER'))) {
++      $return_to = \Drupal::request()->getSchemeAndHttpHost();
+       if ($this->pathValidator->isValid($return_to) && UrlHelper::externalIsLocal($return_to, $base_url)) {
+         $redirect = $return_to;
+       }
+     }
+-
+     // The user is not logged into Drupal.
+     if ($this->account->isAnonymous()) {
+ 
+@@ -216,6 +215,7 @@ class SimplesamlphpAuthController extends ControllerBase implements ContainerInj
+           '%redirect' => $redirect,
+         ]);
+       }
++
+       $response = new RedirectResponse($redirect, RedirectResponse::HTTP_FOUND);
+       return $response;
+     }
+diff --git a/src/Service/SimplesamlphpDrupalAuth.php b/src/Service/SimplesamlphpDrupalAuth.php
+index 79d62f8..6e2128b 100644
+--- a/src/Service/SimplesamlphpDrupalAuth.php
++++ b/src/Service/SimplesamlphpDrupalAuth.php
+@@ -296,6 +296,44 @@ class SimplesamlphpDrupalAuth {
+     // Get matching roles based on retrieved SimpleSAMLphp attributes.
+     $matching_roles = $this->getMatchingRoles();
+ 
++    // CHSLI - WSJ
++    // Check if accountName has 3 numbers at end (IPA)
++    $roles = user_role_names(TRUE);
++    foreach ($roles as $key => $role) {
++//      if ($role == "chspp-ipa") {
++//        $ipaRoleId = $key;
++//      }
++//      if ($role == "chspp-employed") {
++//        $empRoleId = $key;
++//      }
++      if ($role == "temp_pp_user") {
++        $tmpRoleId = $key;
++      }
++    }
++
++    $accountName = $account->getAccountName();
++    $accountName = explode("@", $account->getAccountName())[0];
++//    if (is_numeric(substr($accountName, -3))) {
++//      $this->logger->critical("IPA Role - ".$accountName);
++//      $account->removeRole($empRoleId); // Remove Employed Role
++//      $account->addRole($ipaRoleId);    // IPA Role
++//      $account->save();
++//    } else {
++//      $this->logger->critical("Non-IPA Role - ".$accountName);
++//      $account->removeRole($ipaRoleId); // Remove IPA Role
++//      $account->addRole($empRoleId);    // Employed Role
++//      $account->save();
++//    }
++// hardcoding until saml roles work
++//    $this->logger->critical("AccountName - ".$accountName);
++    //if ($accountName != "wjakah01" and $accountName != "fcheng03" and $accountName != "jmurrycap01" and $accountName != "jmurryipa01" and $accountName != "jmurryeom01" and $accountName != "jmurryipa02") {
++//    if ($accountName != "fcheng03" and $accountName != "jmurrycap01" and $accountName != "jmurryipa01" and $accountName != "jmurryeom01" and $accountName != "jmurryipa02") {
++//      $account->addRole($tmpRoleId);    // Temp Role
++//      $account->save();
++//    }
++    
++    // CHSLI - WSJ
++
+     if ($matching_roles) {
+       foreach ($matching_roles as $role_id) {
+         if ($this->config->get('debug')) {
